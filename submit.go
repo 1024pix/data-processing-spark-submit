@@ -71,7 +71,7 @@ type (
 		JobConfig              *string  `arg:"--job-conf"`
 		File                   string   `json:"file" ini:"file" arg:"positional"`
 		Parameters             []string `arg:"positional"`
-		InterruptedJobExitCode   int64    `arg:"--interrupted-exit-code" help:"Exit code for interrupted job (finised with TERMINATED or FAILED status), default is 0"`
+		InterruptedJobExitCode int64    `arg:"--interrupted-exit-code" help:"Exit code for interrupted job (finised with TERMINATED or FAILED status), default is 0"`
 	}
 )
 
@@ -490,13 +490,13 @@ func getExitCode(job *JobStatus, interruptedJobExitCode int64) int {
 	codeToReturn := job.ReturnCode
 
 	switch job.Status {
-		case JobStatusCOMPLETED:
-			log.Printf("Job finished with code : %v", job.ReturnCode)
-		case JobStatusTERMINATED, JobStatusFAILED:
-			log.Printf("Job has been interrupted, spark-submit exiting with code : %v", interruptedJobExitCode)
-			codeToReturn = interruptedJobExitCode
-		default:
-			log.Printf("Status %s not implemeted yet", job.Status)
+	case JobStatusCOMPLETED:
+		log.Printf("Job finished with code : %v", job.ReturnCode)
+	case JobStatusTERMINATED, JobStatusFAILED:
+		log.Printf("Job has been interrupted, spark-submit exiting with code : %v", interruptedJobExitCode)
+		codeToReturn = interruptedJobExitCode
+	default:
+		log.Printf("Status %s not implemeted yet", job.Status)
 	}
 	return int(codeToReturn)
 }
