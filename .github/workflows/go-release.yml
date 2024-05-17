@@ -1,6 +1,6 @@
 # This workflow builds golang binaries and adds them to a release
 
-name: Go
+name: Go release
 
 on:
   release:
