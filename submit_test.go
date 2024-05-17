@@ -1,13 +1,13 @@
 package main
 
 import (
+	"data-processing-spark-submit/utils"
 	"encoding/json"
 	"net/http"
-	"time"
-	"data-processing-spark-submit/utils"
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	arg "github.com/alexflint/go-arg"
 )
@@ -241,10 +241,10 @@ func TestGetExitCodeCompletedJob(t *testing.T) {
 	interruptedJobExitCode := int64(3)
 
 	JobStatusStruct := &JobStatus{
-		ID:               "dummyId",
-		Name:             "dummyName",
-		Status:           JobStatusCOMPLETED,
-		ReturnCode:       1,
+		ID:         "dummyId",
+		Name:       "dummyName",
+		Status:     JobStatusCOMPLETED,
+		ReturnCode: 1,
 	}
 
 	jobStatus, _ := json.Marshal(JobStatusStruct)
@@ -258,11 +258,11 @@ func TestGetExitCodeCompletedJob(t *testing.T) {
 	}
 
 	jobSubmit := &JobSubmit{
-		ContainerName:    "ovh-odp",
-		Engine:           "spark",
-		Name:             "ovh-odp",
-		Region:           "GRA",
-		EngineVersion:    "2.4.3",
+		ContainerName: "ovh-odp",
+		Engine:        "spark",
+		Name:          "ovh-odp",
+		Region:        "GRA",
+		EngineVersion: "2.4.3",
 	}
 
 	job, _ := client.Submit(ProjectID, jobSubmit)
@@ -282,9 +282,9 @@ func TestGetExitCodeTerminatedJob(t *testing.T) {
 	interruptedJobExitCode := int64(3)
 
 	JobStatusStruct := &JobStatus{
-		ID:               "dummyId",
-		Name:             "dummyName",
-		Status:           JobStatusTERMINATED,
+		ID:     "dummyId",
+		Name:   "dummyName",
+		Status: JobStatusTERMINATED,
 		// No ReturnCode given
 	}
 
@@ -299,11 +299,11 @@ func TestGetExitCodeTerminatedJob(t *testing.T) {
 	}
 
 	jobSubmit := &JobSubmit{
-		ContainerName:    "ovh-odp",
-		Engine:           "spark",
-		Name:             "ovh-odp",
-		Region:           "GRA",
-		EngineVersion:    "2.4.3",
+		ContainerName: "ovh-odp",
+		Engine:        "spark",
+		Name:          "ovh-odp",
+		Region:        "GRA",
+		EngineVersion: "2.4.3",
 	}
 
 	job, _ := client.Submit(ProjectID, jobSubmit)
