@@ -238,7 +238,7 @@ func TestPrintLog(t *testing.T) {
 }
 
 func TestGetExitCodeCompletedJob(t *testing.T) {
-	notCompletedExitCode := int64(3)
+	interruptedJobExitCode := int64(3)
 
 	JobStatusStruct := &JobStatus{
 		ID:               "dummyId",
@@ -267,7 +267,7 @@ func TestGetExitCodeCompletedJob(t *testing.T) {
 
 	job, _ := client.Submit(ProjectID, jobSubmit)
 
-	returnedExitCode := getExitCode(job, notCompletedExitCode)
+	returnedExitCode := getExitCode(job, interruptedJobExitCode)
 	expectedExitCode := 1
 	if returnedExitCode != expectedExitCode {
 		t.Errorf("Returned exit code (%d) does not match expected exit code (%d)", returnedExitCode, expectedExitCode)
@@ -279,7 +279,7 @@ func TestGetExitCodeCompletedJob(t *testing.T) {
 }
 
 func TestGetExitCodeTerminatedJob(t *testing.T) {
-	notCompletedExitCode := int64(3)
+	interruptedJobExitCode := int64(3)
 
 	JobStatusStruct := &JobStatus{
 		ID:               "dummyId",
@@ -308,7 +308,7 @@ func TestGetExitCodeTerminatedJob(t *testing.T) {
 
 	job, _ := client.Submit(ProjectID, jobSubmit)
 
-	returnedExitCode := getExitCode(job, notCompletedExitCode)
+	returnedExitCode := getExitCode(job, interruptedJobExitCode)
 	expectedExitCode := 3
 
 	if returnedExitCode != expectedExitCode {
