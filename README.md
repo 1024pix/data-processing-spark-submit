@@ -1,4 +1,4 @@
-👋 It is a fork of the (OVH data-processing-spark-submit](https://github.com/ovh/data-processing-spark-submit)
+👋 It is a fork of the [OVH data-processing-spark-submit](https://github.com/ovh/data-processing-spark-submit)
 
 - The main branch contains my changes (https://github.com/ovh/data-processing-spark-submit/pull/28 and the CI with Github Actions).
 - The master branch is the updated default branch of the source project.
