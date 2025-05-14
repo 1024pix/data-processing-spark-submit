@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"encoding/json"
 	"log"
 	"net/url"
 	"time"
@@ -64,6 +65,8 @@ type (
 		TTL              string                `json:"ttl"`
 		ReturnCode       int64                 `json:"returnCode"`
 	}
+	// Workaround
+	JobStatusArray []*JobStatus
 
 	// JobEngineParameter representation of JobEngineParameter in OVH API
 	JobEngineParameter struct {
@@ -108,7 +111,34 @@ func (c *Client) GetStatus(projectID string, jobID string) (*JobStatus, error) {
 
 	job := &JobStatus{}
 	path := fmt.Sprintf(DataProcessingStatus, url.QueryEscape(projectID), url.QueryEscape(jobID))
-	return job, c.OVH.Get(path, job)
+	err := c.OVH.Get(path, job)
+	if err != nil {
+		// Workaround because the OVH API can return an Array that is not decodable to
+		// JobStatus even though the response status is between 200 and 300 and the
+		// response is not empty.
+		// Prevents json: cannot unmarshal array into Go value of type main.JobStatus error.
+		if _, ok := err.(*json.UnmarshalTypeError); ok {
+			log.Printf("UnmarshalTypeError encountered: `%v`", err)
+			log.Printf("Unmarshal workaround triggered")
+			jobs := &JobStatusArray{}
+			err2 := c.OVH.Get(path, jobs)
+			if err2 != nil {
+				log.Printf("Unmarshal workaround failed with `%v`, skipping the workaround", err2)
+				return job, err
+			}
+			if len(*jobs) == 0 {
+				log.Printf("Unmarshal workaround result is empty, skipping the workaround")
+				return job, err
+			}
+			job2 := (*jobs)[0]
+			log.Printf("Unmarshal workaround works, only the first element of the array (of len %d) is retrieved: `%v`", len(*jobs), job2)
+			return job2, err2
+			// log.Printf("PIXLOG err au second GetStatus : %v", err2)
+		} else {
+			log.Printf("Other error encountered: `%v`", err)
+		}
+	}
+	return job, err
 }
 
 // GetLog get log of the job from the API
