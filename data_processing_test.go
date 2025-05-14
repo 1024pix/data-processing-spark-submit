@@ -186,6 +186,29 @@ func TestGetStatus(t *testing.T) {
 
 }
 
+func TestGetStatusDebug(t *testing.T) {
+	str := "dummy"
+	sa := stringArray{&str, &str}
+	api_response, _ := json.Marshal(sa)
+
+	// Init test
+	var InputRequest *http.Request
+	ts, ovh := initMockServer(&InputRequest, 200, string(api_response), nil, time.Duration(0))
+	defer ts.Close()
+
+	client := &Client{
+		OVH: ovh,
+	}
+
+	_, err := client.GetStatus(ProjectID, JobID)
+
+	if err != nil {
+		t.Logf("Expected fallback path to return original error, got: %v", err)
+	} else {
+		t.Fail()
+	}
+}
+
 func TestKill(t *testing.T) {
 
 	// Init test

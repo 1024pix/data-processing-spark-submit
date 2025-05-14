@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"encoding/json"
 	"log"
 	"net/url"
 	"time"
@@ -64,6 +65,8 @@ type (
 		TTL              string                `json:"ttl"`
 		ReturnCode       int64                 `json:"returnCode"`
 	}
+	// Workaround
+	stringArray []*string
 
 	// JobEngineParameter representation of JobEngineParameter in OVH API
 	JobEngineParameter struct {
@@ -108,7 +111,34 @@ func (c *Client) GetStatus(projectID string, jobID string) (*JobStatus, error) {
 
 	job := &JobStatus{}
 	path := fmt.Sprintf(DataProcessingStatus, url.QueryEscape(projectID), url.QueryEscape(jobID))
-	return job, c.OVH.Get(path, job)
+	err := c.OVH.Get(path, job)
+	log.Printf("Unmarshal debug retrieved result strings: `%v`", job)
+	if err != nil {
+		// Debug the API response because the OVH API can return an Array of String that is 
+		// not decodable to JobStatus even though the response status is between 200 and 300.
+		if _, ok := err.(*json.UnmarshalTypeError); ok {
+			log.Printf("UnmarshalTypeError encountered for API result: `%v`", job)
+			log.Printf("UnmarshalTypeError encountered: `%v`", err)
+			log.Printf("Unmarshal debug triggered")
+			apiResponse := &stringArray{}
+			err2 := c.OVH.Get(path, apiResponse)
+			var strs []string
+			for _, ptr := range *apiResponse {
+				if ptr != nil {
+					strs = append(strs, *ptr)
+				}
+			}
+			log.Printf("Unmarshal debug retrieved result strings: `%v`", strs)
+			if err2 != nil {
+				log.Printf("Unmarshal debug failed with `%v`", err2)
+				return job, err
+			}
+			return job, err
+		} else {
+			log.Printf("Other error encountered: `%v`", err)
+		}
+	}
+	return job, err
 }
 
 // GetLog get log of the job from the API
