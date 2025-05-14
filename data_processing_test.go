@@ -186,6 +186,101 @@ func TestGetStatus(t *testing.T) {
 
 }
 
+func TestGetStatusWorkaround(t *testing.T) {
+
+	engineParameter := []*JobEngineParameter{
+		{
+			Name:  "arguments",
+			Value: "1000, testargument",
+		},
+		{
+			Name:  "driver_cores",
+			Value: "2",
+		},
+		{
+			Name:  "driver_memory",
+			Value: "1",
+		},
+		{
+			Name:  "driver_memory_overhead",
+			Value: "512",
+		},
+		{
+			Name:  "executor_cores",
+			Value: "1",
+		},
+		{
+			Name:  "executor_num",
+			Value: "1",
+		},
+		{
+			Name:  "executor_memory",
+			Value: "2048",
+		},
+		{
+			Name:  "executor_memory_overhead",
+			Value: "512",
+		},
+		{
+			Name:  "main_application_code",
+			Value: "spark-examples.jar",
+		},
+		{
+			Name:  "main_class_name",
+			Value: "org.apache.spark.examples.SparkPi",
+		},
+		{
+			Name:  "job_type",
+			Value: "java",
+		},
+	}
+
+	jobStatus := &JobStatus{
+		ID:               JobID,
+		Name:             "hello",
+		Region:           "GRA",
+		Engine:           "spark",
+		ContainerName:    "ovh-odp",
+		CreationDate:     "2019-12-03T09:40:13Z",
+		StartDate:        "2019-12-03T09:40:15Z",
+		EndDate:          "",
+		EngineVersion:    "2.4.3",
+		EngineParameters: engineParameter,
+		Status:           "RUNNING",
+		ReturnCode:       '0',
+	}
+	jobStatusArray := []*JobStatus{jobStatus}
+
+	api_response, _ := json.Marshal(jobStatusArray)
+	// Init test
+	var InputRequest *http.Request
+	ts, ovh := initMockServer(&InputRequest, 200, string(api_response), nil, time.Duration(0))
+	defer ts.Close()
+
+	client := &Client{
+		OVH: ovh,
+	}
+
+	res, _ := client.GetStatus(ProjectID, JobID)
+	fmt.Printf("res: `%v`", res)
+
+	if res.StartDate != jobStatus.StartDate {
+		fmt.Println("coucou")
+		t.Fail()
+	}
+
+	if res.Name != jobStatus.Name {
+		fmt.Println("salut")
+		t.Fail()
+	}
+
+	if res.ReturnCode != jobStatus.ReturnCode {
+		fmt.Println("ciao")
+		t.Fail()
+	}
+
+}
+
 func TestKill(t *testing.T) {
 
 	// Init test
