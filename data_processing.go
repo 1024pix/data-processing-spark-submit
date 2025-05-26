@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"encoding/json"
 	"log"
 	"net/url"
 	"time"
@@ -108,7 +109,28 @@ func (c *Client) GetStatus(projectID string, jobID string) (*JobStatus, error) {
 
 	job := &JobStatus{}
 	path := fmt.Sprintf(DataProcessingStatus, url.QueryEscape(projectID), url.QueryEscape(jobID))
-	return job, c.OVH.Get(path, job)
+	err := c.OVH.Get(path, job)
+	if err != nil {
+		// Workaround because the OVH API return not decodable response
+		// even though the response status is between 200 and 300.
+		if _, ok := err.(*json.UnmarshalTypeError); ok {
+			log.Printf("UnmarshalTypeError encountered: `%v`", err)
+			log.Printf("Unmarshal workaround triggered")
+			log.Printf("OVH API result: %v", job)
+			time.Sleep(1 * time.Minute)
+			job2 := &JobStatus{}
+			err2 := c.OVH.Get(path, job2)
+			if err2 != nil {
+				log.Printf("Unmarshal workaround failed with `%v`, skipping the workaround", err2)
+				return job2, err2
+			}
+			log.Printf("Unmarshal workaround works")
+			return job2, err2
+		} else {
+			log.Printf("Other error encountered: `%v`", err)
+		}
+	}
+	return job, err
 }
 
 // GetLog get log of the job from the API
